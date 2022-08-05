@@ -5,7 +5,7 @@
  *
  * 	 - uses readdir() to get info about each thing.
  *
- * 	 - bug: prints an empty string if run from "/"
+ * 	 - Debug: prints an empty string if run from "/"
  */
 #include<stdio.h>
 #include<stdlib.h>
