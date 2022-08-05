@@ -21,8 +21,14 @@ void inode_to_name(ino_t, char *, int);
 
 int main()
 {
-	printpathto( get_inode( "." ));
-	putchar( '\n' );
+	char root_name[8092];
+	if( get_inode( "." ) == get_inode( ".." ) ){
+		inode_to_name( get_inode("."), root_name, 8092);
+		printf( "/%s\n", root_name );
+	}else{
+		printpathto( get_inode( "." ));
+		putchar( '\n' );
+	}
 	return 0;
 }
 void printpathto( ino_t curdir_inode )
