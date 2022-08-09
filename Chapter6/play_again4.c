@@ -1,17 +1,20 @@
-/* play_again3.c
+/* play_again4.c
  * 	purpose :  ask if user wants another transaction
  * 	method  :  set tty into char-by-char mode, no-echo mode
  * 		   set tty into no-delay mode
  * 		   read char, return result
- * 	returns :  0 => yes, 1 => no
+ * 		   resets termial modes on SIGINT, ingores SIGQUIT
+ * 	returns :  0 => yes, 1 => no, 2 => timeout
  * 	better  :  reset termial mode on interrupt
  */
 #include<stdio.h>
+#include<stdlib.h>
 #include<termios.h>
 #include<fcntl.h>
 #include<ctype.h>		/* tolower */
 #include<unistd.h>		/* sleep */
 #include<string.h>		/* strchr */
+#include<signal.h>		
 
 #define QUESTION "Do you want another transaction"
 #define TRIES 3	/* max tries */
@@ -27,10 +30,13 @@ char get_ok_char();
 int main()
 {
 	int response;
+	void ctrl_c_handler(int);
 
-	tty_mode(0);
+	tty_mode(0);		/* save current mode */
 	set_cr_noecho_mode();	/* set -icanon, -echo */
 	set_nodelay_mode();	/* noiput => EOF */
+	signal( SIGINT, ctrl_c_handler );	/* handle INT */
+	signal( SIGQUIT, SIG_IGN );		/* ignore QUIT signals */
 	response = get_response( QUESTION, TRIES );
 	tty_mode(1);
 	return response;
@@ -82,9 +88,9 @@ void set_nodelay_mode()
  */
 {
 	int termflags;
-	termflags = fcntl( 0, F_GETFL );
-	termflags |= O_NONBLOCK;
-	fcntl( 0, F_SETFL, termflags );
+	termflags = fcntl( 0, F_GETFL );	/* read curr. setting */
+	termflags |= O_NONBLOCK;		/* flip on nodelay bit */
+	fcntl( 0, F_SETFL, termflags );		/* and install */
 }
 
 void set_cr_noecho_mode()
@@ -108,12 +114,25 @@ void tty_mode(int how)
 {
 	static struct termios original_mode;
 	static int original_flags;
+	static int stored = 0;
+
 	if( how == 0 ){
 		tcgetattr( 0, &original_mode );
 		original_flags = fcntl( 0, F_GETFL );
+		stored = 1;
 	}
 	else{
 		tcsetattr( 0, TCSANOW, &original_mode );
 		fcntl( 0, F_SETFL, original_flags );
 	}
+}
+
+void ctrl_c_handler( int signum )
+/*
+ * purpose: called if SIGINT is detected
+ * action : reset tty and scram
+ */
+{
+	tty_mode(1);
+	exit(1);
 }
