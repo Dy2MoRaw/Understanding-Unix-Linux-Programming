@@ -1,5 +1,7 @@
 /* bounce.h */
 /* some settings for the game */
+#ifndef   _BOUNCE_H
+#define   _BOUNCE_H
 
 #define   BLANK           ' '
 #define   DFL_SYMBOL      'o'
@@ -17,6 +19,7 @@
 #define   X_TTM           5
 #define   Y_TTM           8
 
+#define   PADDLE_LEN      3
 struct ppball{
 	int y_pos,x_pos,
 	    y_ttm,x_ttm,
@@ -24,3 +27,5 @@ struct ppball{
 	    y_dir,x_dir;
 	char symbol;
 };
+
+#endif
