@@ -36,9 +36,7 @@ int main( int argc, char *argv[] )
 	if( sockfd == -1 )
 		oops( "socket" );
 
-	memset( servaddr, 0, sizeof(*servaddr) );
-
-	servaddr = ( struct sockaddr_in * )aip->ai_addr;
+	servaddr = ( struct sockaddr_in * )aip->ai_addr ;
 	servaddr->sin_port = htons( atoi(argv[2]) );
 	servaddr->sin_family = AF_INET;
 
