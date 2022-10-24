@@ -19,12 +19,14 @@ int main( int argc, char *argv[] )
 	struct addrinfo hints, *aip;
 	struct hostent *hp;
 
-	int sockfd, sockfd_new;
+	int sockfd;
 	char buffer[BUFSIZ];
 	int n_read;
 	
-	if( argc != 3 ) exit(1);
-
+	if( argc != 3 ){
+		perror("Usage: ./rls hostname directory");
+	       	exit(1);
+	}
 	memset( &hints, 0, sizeof(hints) );
 	hints.ai_family = AF_INET;
 	hints.ai_socktype = SOCK_STREAM;
@@ -36,8 +38,6 @@ int main( int argc, char *argv[] )
 
 	getaddrinfo( hp->h_name, NULL, &hints, &aip );
 
-	memset( servaddr, 0, sizeof( *servaddr ) );
-
 	servaddr = ( struct sockaddr_in * )aip->ai_addr;
 	servaddr->sin_family = AF_INET;
 	servaddr->sin_port = htons( PORTNUM );
@@ -46,16 +46,17 @@ int main( int argc, char *argv[] )
 	if( sockfd == -1 )
 		oops( "socket" );
 
-	if( connect( sockfd, ( struct sockaddr * )servaddr, 
-				sizeof(*servaddr) ) != 0 )
+	if( connect( sockfd, aip->ai_addr, aip->ai_addrlen ) != 0 )
 		oops( "connect" );
-
+	
+	// send massage and then get results
 	if( write( sockfd, argv[2], strlen(argv[2]) ) == -1 )
 		oops( "write" );
 
 	if( write( sockfd, "\n", 1 ) == -1 )
 		oops( "write" );
-
+	
+	memset( buffer, 0, sizeof(char) * BUFSIZ );
 	while( ( n_read = read( sockfd, buffer, BUFSIZ ) ) > 0 )
 		if( write( 1, buffer, n_read ) == -1 )
 			oops( "write" );

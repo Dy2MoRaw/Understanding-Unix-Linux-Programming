@@ -29,7 +29,7 @@ int main( int argc, char *argv[] )
 	hints.ai_flags = 0;
 	hints.ai_protocol = 0;
 	
-	hp = gethostent();
+	hp = gethostbyname( argv[1] );
 	getaddrinfo( hp->h_name, NULL, &hints, &aip );
 	
 	sockfd = socket( aip->ai_family, aip->ai_socktype, aip->ai_protocol );

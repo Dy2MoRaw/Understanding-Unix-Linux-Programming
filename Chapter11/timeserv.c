@@ -28,10 +28,9 @@ int main( int argc, char *argv[] )
 
 	struct hostent *hp = gethostent();
 
+	memset( &hints, 0 ,sizeof(hints) );
 	hints.ai_family = AF_INET;
 	getaddrinfo( hp->h_name, NULL, &hints, &aip );
-	
-//	memset( saddr, '\0', sizeof(*saddr) );	/* initial the struct */
 
 	saddr = ( struct sockaddr_in * )aip->ai_addr;
 	saddr->sin_port = htons( PORTNUM );		/* fill in socket port */
