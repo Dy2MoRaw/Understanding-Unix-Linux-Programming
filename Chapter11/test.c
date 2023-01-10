@@ -12,21 +12,22 @@ int main()
 
 	struct addrinfo *aip;
 	struct addrinfo hints;
-
-	struct hostent *hp = gethostent();
+	
+	struct sockaddr_storage *staddr;
+	struct sockaddr_in *saddr;
+	//struct hostent *hp = gethostent();
 
 	memset( &hints, 0, sizeof(hints) );
-	hints.ai_family = AF_INET;
-	hints.ai_flags = AI_ADDRCONFIG;
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
 
-	getaddrinfo( hp->h_name, portnum, &hints, &aip );
+	getaddrinfo( NULL, portnum, &hints, &aip );
 	
-	//int sockfd = socket( AF_INET, SOCK_STREAM, 0 );
-	//memset(abuf, 0, sizeof(abuf));
-
-	//struct sockaddr_in *saddr = (struct sockaddr_in * )aip->ai_addr;
-	inet_ntop( AF_INET, &(( struct sockaddr_in *) aip->ai_addr)->sin_addr 
-				, abuf, INET_ADDRSTRLEN );
+	int sockfd = socket( aip->ai_family, aip->ai_socktype, 0 );
+	staddr = ( struct sockaddr_storage * )aip->ai_addr;
+	//inet_ntop( AF_INET, &(( struct sockaddr_in *) aip->ai_addr)->sin_addr, abuf, INET_ADDRSTRLEN );
+	inet_ntop( aip->ai_family, &((struct sockaddr_in *)staddr)->sin_addr, abuf, INET_ADDRSTRLEN );
 	printf( "by adddrinfo:%s\n", abuf );
 
 	freeaddrinfo( aip );

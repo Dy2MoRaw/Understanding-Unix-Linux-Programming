@@ -28,26 +28,30 @@ int make_server_socket_q( int portnum, int backlog )
 	struct sockaddr_in *saddr;
 	struct addrinfo hints, *aip;
 
-	struct hostent *hp = gethostent();
-	memset( &hints, 0, sizeof(hints) );
-	hints.ai_family = AF_INET;
-	getaddrinfo( hp->h_name, NULL, &hints, &aip );
-	
-	saddr = ( struct sockaddr_in * )aip->ai_addr;
-	saddr->sin_family = AF_INET;
-	saddr->sin_port = htons( portnum );
+	char port[BUFSIZ];
 
-	int sockfd = socket( AF_INET, SOCK_STREAM, 0 );
+	memset( &hints, 0, sizeof(hints) );
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags = AI_PASSIVE;
+
+	sprintf( port, "%d", portnum );
+	getaddrinfo( NULL, port, &hints, &aip );
+
+	int sockfd = socket( aip->ai_family, aip->ai_socktype, 0 );
 	if( sockfd == -1 )
 		return -1;
 
-	if( bind( sockfd, ( struct sockaddr *)saddr, sizeof( *saddr ) ) )
+	if( bind( sockfd, aip->ai_addr, aip->ai_addrlen ) )
 		return -1;
 
 	if( listen( sockfd, backlog ) != 0 )
 		return -1;
 	
-	printf( "ip:%s\n", inet_ntoa( saddr->sin_addr ) );
+	char ip[BUFSIZ];
+	inet_ntop( aip->ai_family, &((struct sockaddr_in *)aip->ai_addr)->sin_addr
+							, ip, BUFSIZ );
+	printf( "ip:%s\n", ip );
 	return sockfd;
 }
 
